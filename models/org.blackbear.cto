@@ -1,0 +1,251 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * A business network for shipping perishable goods
+ * The cargo is temperature controlled and contracts
+ * can be negociated based on the temperature
+ * readings received for the cargo
+ */
+
+namespace org.blackbear
+
+/**
+ * An abstract participant type in this business network
+ */
+abstract participant Business identified by name {
+  o String name
+  o Address address
+  o Double accountBalance
+  o Double debtBalance
+}
+
+/**
+ * A concept for a simple street address
+ */
+concept Address {
+  o String city optional
+  o String country
+  o String street optional
+  o String zip optional
+}
+
+/**
+ * A Seller is a type of participant in the network
+ */
+participant Seller extends Business {
+}
+
+/**
+ * An Buyer is a type of participant in the network
+ */
+participant Buyer extends Business {
+  o  Product[] products
+}
+
+/**
+ * A Shipper is a type of participant in the network
+ */
+participant Shipper extends Business {
+}
+
+/**
+ * A Funder is a type of participant in the network
+ */
+participant Funder extends Business {
+  o Double assetBalance
+}
+
+/**
+ * The type of perishable product being shipped
+ */
+enum ProductType {
+  o BANANAS
+  o APPLES
+  o PEARS
+  o PEACHES
+  o COFFEE
+}
+
+concept Product {
+  o String productId
+  o String quantity
+  o String price
+}
+
+/** 
+ * The Status of Invoice
+*/
+enum InvoiceStatus {
+  o PENDING
+  o GENERATED
+}
+
+/**
+ * The status of Funding
+ */
+ enum FundingStatus {
+   o PLACED
+   o APPROVED
+   o ON_HOLD
+   o DENIED
+ }
+
+/**
+ * The status of a Shipment
+ */
+enum ShipmentStatus {
+  o PENDING
+  o CREATED
+  o IN_TRANSIT
+  o DELIVERED
+}
+
+/**
+ * A shipment being tracked as an asset on the ledger
+ */
+asset Shipment identified by shipmentId {
+  --> Shipper shipper
+  o String shipmentId
+  o ShipmentStatus shipmentStatus
+  o TemperatureReading[] temperatureReadings optional
+  --> Contract contract
+}
+
+/**
+ * Product list created by the seller.
+ */
+asset ProductList identified by listId {
+  o String listId
+  o Product[] products
+  --> Seller seller
+}
+
+// Supplier creates a product listing contract for the list of products
+transaction CreateProductList{
+  o String[] products
+  --> Seller seller
+}
+
+/**
+ * Defines a contract between a Seller and an Buyer to ship using
+ * a Shipper, paying a set unit price. The unit price is multiplied by
+ * a penality factor proportional to the deviation from the min and max
+ * negociated temperatures for the shipment.
+ */
+asset Contract identified by contractId {
+  o String contractId
+
+  o Product[] products
+  o DateTime arrivalDateTime
+  o Double unitCount
+  o Double unitPrice
+
+  o Double minTemperature optional
+  o Double maxTemperature optional
+  o Double minPenaltyFactor optional
+  o Double maxPenaltyFactor optional
+  
+  o ShipmentStatus shipmentStatus
+  o InvoiceStatus invoiceStatus
+  o FundingStatus fundingStatus
+  --> Seller seller
+  --> Buyer buyer
+  --> Funder funder
+}
+
+/**
+ * Invoice
+ */
+asset Invoice identified by invoiceId {
+  --> Seller seller
+  o String invoiceId
+  o InvoiceStatus invoiceStatus
+  --> Contract contract
+}
+
+/**
+ * An abstract transaction that is related to a Shipment
+ */
+abstract transaction ShipmentTransaction {
+  --> Shipment shipment
+}
+
+/**
+ * Purchase order transaction created by the buyer.
+ */
+transaction PurchaseOrder{
+  o String[] products
+
+  o Double unitCount
+  o Double unitPrice
+
+  o Double minTemperature optional
+  o Double maxTemperature optional
+  o Double minPenaltyFactor optional
+  o Double maxPenaltyFactor optional
+
+  o FundingStatus fundingStatus
+  --> Buyer buyer
+  --> Seller seller
+  --> Funder funder
+}
+
+/**
+ * An temperature reading for a shipment. E.g. received from a
+ * device within a temperature controlled shipping container
+ */
+transaction TemperatureReading extends ShipmentTransaction {
+  o Double centigrade
+}
+
+/**
+ * A notification that a shipment has been received by the
+ * buyer and that funds should be transferred from the buyer
+ * to the seller to pay for the shipment.
+ */
+transaction ShipmentReceived extends ShipmentTransaction {
+}
+
+/**
+ * Invoice update
+ */
+transaction InvoiceUpdate {
+  --> Seller seller
+  --> Contract contract
+}
+
+/**
+ * Approval of Funds
+ */
+transaction FundsApproval {
+  --> Funder funder
+  --> Invoice invoice
+  --> Contract contract
+}
+
+/**
+ * Create the Shipment
+ */
+transaction CreateShipment {
+  --> Shipper shipper
+  --> Contract contract
+}
+
+
+/**
+ * JUST FOR INITIALIZING A DEMO
+ */
+transaction SetupDemo {
+}
