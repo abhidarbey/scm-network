@@ -32,7 +32,6 @@ Submit a `SetupDemo` transaction:
 This transaction populates the Participant Registries with a `Seller`, a `Buyer`, a `Funder` and a `Shipper`.
 
 Submit a `CreateProductList` transaction. This will create a product list in ProductList asset.
->Click on the options for the optional properties to set the temperature parameters and the penalty factor. This will also require to submit the `TemperatureReading` transaction after the creation of the shipment.
 
 ```
 {
@@ -43,6 +42,7 @@ Submit a `CreateProductList` transaction. This will create a product list in Pro
 ```
 
 Submit a `PurchaseOrder` transaction. This transaction will create a contract in the Contract asset.
+>Click on the options for the optional properties to set the temperature parameters and the penalty factor. This will also require to submit the `TemperatureReading` transaction after the creation of the shipment.
 
 ```
 {
