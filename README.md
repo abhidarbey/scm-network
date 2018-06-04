@@ -106,4 +106,6 @@ Submit a `ShipmentReceived` transaction for `shipment_id` to trigger the payout 
 ```
 When the shipment have been received by the buyer, the funder's accountBalance will be deducted by 5000 and its assetBalance will be credited by 5500. At the same time, the seller's accountBalance will be credited by 5000 and the buyer's debtBalance will be credited by 5500.
 
+The buyer's product inventory will also be updated.
+
 Congratulations!
